@@ -359,7 +359,10 @@ void Integrator::kernel_SampleLightSource(uint tid, const float4* rayPosAndNear,
       
     
     const float4 lightColor = LightIntensity(lightId, lambda, shadowRayPos, shadowRayDir);
-    *out_shadeColor = (lightColor * bsdfV.val / lgtPdfW) * cosThetaOut * misWeight;
+    if (bounce != 0)
+      *out_shadeColor = (lightColor * bsdfV.val / lgtPdfW) * cosThetaOut * misWeight;
+    else
+      *out_shadeColor = (lightColor / lgtPdfW) * cosThetaOut * misWeight;
   }
   else
     *out_shadeColor = float4(0.0f, 0.0f, 0.0f, 0.0f);
@@ -468,7 +471,10 @@ void Integrator::kernel_NextBounce(uint tid, uint bounce, const float4* in_hitPa
 
     currAccumColor += currThoroughput * shadeColor;
     *accumColor       = currAccumColor;
-    *accumThoroughput = currThoroughput*cosTheta*bxdfVal; 
+    if (bounce != 0)
+      *accumThoroughput = currThoroughput*cosTheta*bxdfVal;
+    else
+      *accumThoroughput = currThoroughput;
   }
 
   // compute point on the other side of the surface in case of transmission
