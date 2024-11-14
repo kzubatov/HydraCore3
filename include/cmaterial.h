@@ -212,7 +212,7 @@ static inline float safe_sqrt(float val)
 
 static inline float3 lambertSample(const float2 rands, const float3 v, const float3 n)
 {
-  return MapSampleToCosineDistribution(rands.x, rands.y, n, n, 1.0f);
+  return MapSampleToCosineDistribution(rands.x, rands.y, v, n, 0.0f);
 }
 
 static inline float lambertEvalPDF(float3 l, float3 v, float3 n) 

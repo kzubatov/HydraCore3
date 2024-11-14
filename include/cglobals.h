@@ -150,34 +150,18 @@ static inline float3 MapSampleToCosineDistribution(float r1, float r2, float3 di
 
   //sincos(2.0f*r1*3.141592654f, &sin_phi, &cos_phi);
 
-  const float cos_theta = std::pow(1.0f - r2, 1.0f / (power + 1.0f));
-  const float sin_theta = std::sqrt(1.0f - cos_theta*cos_theta);
+  const float cos_theta = std::sqrt(1.0f - r2);
+  const float sin_theta = std::sqrt(r2);
 
-  float3 deviation;
-  deviation.x = sin_theta*cos_phi;
-  deviation.y = sin_theta*sin_phi;
-  deviation.z = cos_theta;
-
-  float3 ny = direction, nx, nz;
-  CoordinateSystemV2(ny, &nx, &nz);
-
-  {
-    float3 temp = ny;
-    ny = nz;
-    nz = temp;
-  }
-
-  float3 res = nx*deviation.x + ny*deviation.y + nz*deviation.z;
-
-  float invSign = dot(direction, hit_norm) > 0.0f ? 1.0f : -1.0f;
-
-  if (invSign*dot(res, hit_norm) < 0.0f) // reflected ray is below surface #CHECK_THIS
-  {
-    res = (-1.0f)*nx*deviation.x + ny*deviation.y - nz*deviation.z;
-    //belowSurface = true;
-  }
-
-  return res;
+  float3 tang = std::abs(hit_norm.x) > 0.99f ? float3(0, 1, 0) : float3(1, 0, 0);
+  float3 bitang = normalize(cross(hit_norm, tang));
+  tang = cross(bitang, hit_norm);
+  float3 res = float3(
+      sin_theta * cos_phi,
+      sin_theta * sin_phi,
+      cos_theta
+  );
+  return hit_norm * res.z + tang * res.x + bitang * res.y;
 }
 
 /**
